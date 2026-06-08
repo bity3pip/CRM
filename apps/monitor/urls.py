@@ -1,3 +1,6 @@
 from django.urls import path
+from .views import ChatterMetricsView
 
-urlpatterns = []
+urlpatterns = [
+    path('monitor/chatters/', ChatterMetricsView.as_view(), name='chatter-metrics'),
+]
