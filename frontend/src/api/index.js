@@ -2,13 +2,13 @@ import axios from 'axios';
 import router from '@/router';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_ULR || 'http://localhost:8000',
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
     headers: {
         'Content-Type': 'application/json',
     }
 })
 
-api.interceptors.response.use((config) => {
+api.interceptors.request.use((config) => {
     const token = localStorage.getItem('access_token')
     if (token) {
         config.headers.Authorization = `Bearer ${token}`
