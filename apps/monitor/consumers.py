@@ -5,16 +5,9 @@ from django.conf import settings
 from django.utils import timezone
 
 from apps.accounts.models import User
-from apps.chat.models import Dialog
 
 
 class MonitorConsumer(AsyncWebsocketConsumer):
-    """
-    WebSocket для тимлида.
-    Подключение: ws://host/ws/monitor/?token=<jwt>
-    Группа: monitor
-    """
-
     async def connect(self):
         user = self.scope['user']
 
@@ -29,7 +22,6 @@ class MonitorConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add('monitor', self.channel_name)
         await self.accept()
 
-        # Сразу отправляем текущее состояние
         snapshot = await self.get_snapshot()
         await self.send(text_data=json.dumps({
             'type': 'snapshot',
@@ -40,7 +32,6 @@ class MonitorConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard('monitor', self.channel_name)
 
     async def receive(self, text_data):
-        # Тимлид может запросить свежий снапшот
         try:
             data = json.loads(text_data)
         except json.JSONDecodeError:
@@ -54,15 +45,12 @@ class MonitorConsumer(AsyncWebsocketConsumer):
             }))
 
     async def monitor_update(self, event):
-        """Получаем событие от chat consumer и пересылаем тимлиду."""
         snapshot = await self.get_snapshot()
         await self.send(text_data=json.dumps({
             'type': 'update',
             'event': event.get('event'),
             'data': snapshot,
         }))
-
-    # ------------------------------------------------------------------ helpers
 
     @database_sync_to_async
     def get_snapshot(self):
@@ -86,7 +74,11 @@ class MonitorConsumer(AsyncWebsocketConsumer):
                 'id': chatter.id,
                 'username': chatter.username,
                 'is_online': chatter.is_online,
-                'last_seen': chatter.last_seen.isoformat() if chatter.last_seen else None,
+                'last_seen': (
+                    chatter.last_seen.isoformat()
+                    if chatter.last_seen
+                    else None
+                ),
                 'dialogs_count': len(dialogs),
                 'overdue_count': len(overdue),
                 'overdue_dialogs': [
@@ -94,7 +86,11 @@ class MonitorConsumer(AsyncWebsocketConsumer):
                         'id': d.id,
                         'fan_name': d.fan_name,
                         'waiting_minutes': round(
-                            (timezone.now() - d.fan_waiting_since).total_seconds() / 60, 1
+                            (
+                                    timezone.now() - d.fan_waiting_since
+                            ).total_seconds()
+                            / 60,
+                            1,
                         ),
                     }
                     for d in overdue

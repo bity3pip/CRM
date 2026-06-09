@@ -73,7 +73,9 @@ class SendMessageView(generics.CreateAPIView):
             dialog.fan_waiting_since = None
             dialog.save(update_fields=['fan_waiting_since', 'updated_at'])
 
-        return Response(MessageSerializer(message).data, status=status.HTTP_201_CREATED)
+        return Response(MessageSerializer(message).data,
+                        status=status.HTTP_201_CREATED
+                        )
 
 
 class FanMessageView(generics.CreateAPIView):
@@ -97,7 +99,10 @@ class FanMessageView(generics.CreateAPIView):
             if not dialog.fan_waiting_since:
                 dialog.fan_waiting_since = timezone.now()
             dialog.unread_count += 1
-            dialog.save(update_fields=['fan_waiting_since', 'unread_count', 'updated_at'])
+            dialog.save(update_fields=['fan_waiting_since',
+                                       'unread_count',
+                                       'updated_at']
+                        )
 
         channel_layer = get_channel_layer()
         message_data = MessageSerializer(message).data
@@ -118,7 +123,9 @@ class FanMessageView(generics.CreateAPIView):
             }
         )
 
-        return Response(MessageSerializer(message).data, status=status.HTTP_201_CREATED)
+        return Response(MessageSerializer(message).data,
+                        status=status.HTTP_201_CREATED
+                        )
 
 
 @api_view(['POST'])

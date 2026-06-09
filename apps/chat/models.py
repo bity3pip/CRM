@@ -29,7 +29,8 @@ class Dialog(models.Model):
         verbose_name_plural = 'Dialogs'
 
     def __str__(self):
-        return f'{self.fan_name} → {self.model.username} (chatter: {self.chatter.username})'
+        return (f'{self.fan_name} → {self.model.username} '
+                f'(chatter: {self.chatter.username})')
 
     @property
     def is_overdue(self):

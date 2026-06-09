@@ -1,7 +1,6 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from django.utils import timezone
 from django.db import transaction
 
 from .models import Dialog, Message
@@ -9,14 +8,7 @@ from .serializers import MessageSerializer
 from apps.accounts.presence import set_user_online, set_user_offline
 
 
-
 class DialogConsumer(AsyncWebsocketConsumer):
-    """
-    WebSocket для чатера.
-    Подключение: ws://host/ws/dialogs/{dialog_id}/?token=<jwt>
-    Группа: dialog_{dialog_id}
-    """
-
     async def connect(self):
         user = self.scope['user']
 
@@ -49,9 +41,27 @@ class DialogConsumer(AsyncWebsocketConsumer):
 
         await self.mark_as_read(self.dialog_id)
 
+        query_string = self.scope.get('query_string', b'').decode()
+        params = dict(p.split('=') for p in query_string.split('&') if '=' in p)
+        last_message_id = params.get('last_message_id')
+
+        if last_message_id:
+            missed = await self.get_missed_messages(
+                self.dialog_id,
+                int(last_message_id)
+            )
+            if missed:
+                await self.send(text_data=json.dumps({
+                    'type': 'missed_messages',
+                    'messages': missed,
+                }))
+
     async def disconnect(self, close_code):
         if hasattr(self, 'group_name'):
-            await self.channel_layer.group_discard(self.group_name, self.channel_name)
+            await self.channel_layer.group_discard(
+                self.group_name,
+                self.channel_name
+            )
 
         if hasattr(self, 'user_id'):
             await set_user_offline(self.user_id)
@@ -67,8 +77,6 @@ class DialogConsumer(AsyncWebsocketConsumer):
             )
 
     async def receive(self, text_data):
-        user = self.scope['user']
-
         try:
             data = json.loads(text_data)
         except json.JSONDecodeError:
@@ -129,7 +137,6 @@ class DialogConsumer(AsyncWebsocketConsumer):
             'message': event['message'],
         }))
 
-
     async def send_error(self, detail):
         await self.send(text_data=json.dumps({
             'type': 'error',
@@ -147,7 +154,10 @@ class DialogConsumer(AsyncWebsocketConsumer):
         Dialog.objects.filter(id=dialog_id).update(unread_count=0)
 
     @database_sync_to_async
-    def save_chatter_message(self, dialog_id, content, message_type, ppv_price):
+    def save_chatter_message(self, dialog_id,
+                             content, message_type,
+                             ppv_price
+                             ):
         try:
             with transaction.atomic():
                 dialog = Dialog.objects.select_for_update().get(id=dialog_id)
@@ -167,3 +177,11 @@ class DialogConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def serialize_message(self, message):
         return MessageSerializer(message).data
+
+    @database_sync_to_async
+    def get_missed_messages(self, dialog_id, last_message_id):
+        messages = Message.objects.filter(
+            dialog_id=dialog_id,
+            id__gt=last_message_id,
+        ).order_by('created_at')
+        return MessageSerializer(messages, many=True).data

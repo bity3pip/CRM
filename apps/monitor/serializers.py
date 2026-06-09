@@ -2,7 +2,6 @@ from rest_framework import serializers
 from django.conf import settings
 from django.utils import timezone
 from apps.accounts.models import User
-from apps.chat.models import Dialog
 
 
 class ChatterMetricSerializer(serializers.ModelSerializer):
@@ -11,7 +10,10 @@ class ChatterMetricSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'is_online', 'last_seen', 'dialogs_count', 'overdue_count']
+        fields = ['id', 'username',
+                  'is_online', 'last_seen',
+                  'dialogs_count', 'overdue_count'
+                  ]
 
     def get_dialogs_count(self, obj):
         return obj.chatter_dialogs.count()
