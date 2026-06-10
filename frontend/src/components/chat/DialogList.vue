@@ -1,8 +1,13 @@
 <template>
   <div class="dialog-list">
     <div class="dialog-list-header">
-      <h2>Диалоги</h2>
-      <span class="dialog-count">{{ dialogs.length }}</span>
+      <div class="header-top">
+        <h2>Диалоги</h2>
+        <div class="header-actions">
+          <span class="dialog-count">{{ dialogs.length }}</span>
+          <button class="logout-btn" @click="$emit('logout')">Выйти</button>
+        </div>
+      </div>
     </div>
 
     <div v-if="loading" class="loading">Загрузка...</div>
@@ -76,5 +81,38 @@ defineEmits(['select'])
 .dialogs {
   flex: 1;
   overflow-y: auto;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  color: #555;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 8px;
+  width: auto;
+  transition: border-color 0.2s;
+}
+
+.logout-btn:hover {
+  border-color: #444;
+  color: #999;
 }
 </style>

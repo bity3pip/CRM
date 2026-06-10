@@ -5,6 +5,10 @@
         <span class="fan-name">{{ dialog.fan_name }}</span>
         <span class="model-name">{{ dialog.model_username }}</span>
       </div>
+      <div class="connection-status">
+        <span class="dot" :class="connected ? 'online' : 'offline'" />
+        {{ connected ? 'Online' : 'Reconnecting...'}}
+      </div>
       <div v-if="dialog.is_overdue" class="overdue-alert">
         ⏰ Ждёт {{ dialog.waiting_minutes }}м
       </div>
@@ -64,9 +68,10 @@ const props = defineProps({
   messages: Array,
   hasMore: Boolean,
   loading: Boolean,
+  connected: Boolean,
 })
 
-const emit = defineEmits(['send', 'load-more'])
+const emit = defineEmits(['send', 'load-more', 'logout'])
 
 const chat = useChatStore()
 const messagesEl = ref(null)
@@ -269,4 +274,21 @@ watch(() => props.dialog?.id, () => {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+.connection-status {
+  font-size: 12px;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dot.online { background: #22c55e; }
+.dot.offline { background: #ef4444; }
 </style>

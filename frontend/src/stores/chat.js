@@ -75,13 +75,6 @@ export const useChatStore = defineStore('chat', () => {
         messages.value.push(message)
     }
 
-    function updateDialog(updatedDialog) {
-        const index = dialogs.value.findIndex(d => d.id === updatedDialog.id)
-        if (index !== -1) {
-            dialogs.value[index] = { ...dialogs.value[index], ...updatedDialog }
-        }
-    }
-
     function upsertDialogFromMessage(message, dialogId) {
         const dialog = dialogs.value.find(d => d.id === dialogId)
         if (dialog) {
@@ -92,6 +85,11 @@ export const useChatStore = defineStore('chat', () => {
             }
         }
         dialogs.value.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+    }
+
+    function getLastMessageId() {
+        if (messages.value.length === 0) return null
+        return messages.value[messages.value.length - 1].id
     }
 
     return {
@@ -108,7 +106,7 @@ export const useChatStore = defineStore('chat', () => {
         markAsRead,
         sendMessage,
         addMessage,
-        updateDialog,
         upsertDialogFromMessage,
+        getLastMessageId,
     }
 })

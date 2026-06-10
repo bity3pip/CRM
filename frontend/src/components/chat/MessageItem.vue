@@ -35,7 +35,13 @@ function formatTime(dateStr) {
   border-radius: 12px;
   position: relative;
 }
+.message.chatter {
+  justify-content: flex-end;
+}
 
+.message.fan {
+  justify-content: flex-start;
+}
 .message.chatter .bubble {
   background: #2563eb;
   border-bottom-right-radius: 4px;
