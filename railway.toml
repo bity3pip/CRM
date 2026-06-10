@@ -3,6 +3,4 @@ dockerfile = "Dockerfile"
 
 [deploy]
 startCommand = "sh -c 'python manage.py migrate && python manage.py seed && daphne -b 0.0.0.0 -p $PORT config.asgi:application'"
-healthcheckPath = "/api/auth/login/"
-healthcheckTimeout = 60
 restartPolicyType = "on_failure"
