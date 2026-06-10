@@ -13,6 +13,10 @@
 
 ## Запуск
 
+### Deploy
+
+- https://bubbly-illumination-production-ab06.up.railway.app
+
 ### Docker 
 
 ```bash
@@ -25,34 +29,34 @@ docker-compose up --build
 
 ## Тестовые учётки
 
-| Логин | Пароль | Роль     |
-|-------|--------|----------|
-| teamlead | test1234 | Teamlead |
-| chatter1 | test1234 | Chatter  |
-| chatter2 | test1234 | Chatter  |
-| chatter3 | test1234 | Chatter  |
+| Логин      | Пароль   | Роль     |
+|------------|----------|----------|
+| teamlead   | test1234 | Teamlead |
+| chatter1   | test1234 | Chatter  |
+| chatter2   | test1234 | Chatter  |
+| chatter3   | test1234 | Chatter  |
 | model_anna | test1234 | Model    |
-| model_kate | test1234 | Model   |
+| model_kate | test1234 | Model    |
 
 ## REST API
 
-| Метод | URL | Роль | Описание |
-|-------|-----|------|----------|
-| POST | /api/auth/login/ | все | Получить JWT токен |
-| GET | /api/auth/me/ | все | Текущий пользователь |
-| GET | /api/dialogs/ | chatter | Список диалогов |
-| GET | /api/dialogs/{id}/messages/ | chatter | История сообщений |
-| POST | /api/dialogs/{id}/messages/send/ | chatter | Отправить сообщение |
-| POST | /api/dialogs/{id}/fan-message/ | все | Симуляция сообщения от фана |
-| POST | /api/dialogs/{id}/read/ | chatter | Обнулить непрочитанные |
-| GET | /api/monitor/chatters/ | teamlead | Метрики чатеров |
+| Метод | URL                              | Роль     | Описание                    |
+|-------|----------------------------------|----------|-----------------------------|
+| POST  | /api/auth/login/                 | все      | Получить JWT токен          |
+| GET   | /api/auth/me/                    | все      | Текущий пользователь        |
+| GET   | /api/dialogs/                    | chatter  | Список диалогов             |
+| GET   | /api/dialogs/{id}/messages/      | chatter  | История сообщений           |
+| POST  | /api/dialogs/{id}/messages/send/ | chatter  | Отправить сообщение         |
+| POST  | /api/dialogs/{id}/fan-message/   | все      | Симуляция сообщения от фана |
+| POST  | /api/dialogs/{id}/read/          | chatter  | Обнулить непрочитанные      |
+| GET   | /api/monitor/chatters/           | teamlead | Метрики чатеров             |
 
 ## WebSocket
 
-| URL | Роль | Описание |
-|-----|------|----------|
-| ws://host/ws/dialogs/{id}/?token=JWT | chatter | Диалог в реальном времени |
-| ws://host/ws/monitor/?token=JWT | teamlead | Монитор в реальном времени |
+| URL                                  | Роль     | Описание                   |
+|--------------------------------------|----------|----------------------------|
+| ws://host/ws/dialogs/{id}/?token=JWT | chatter  | Диалог в реальном времени  |
+| ws://host/ws/monitor/?token=JWT      | teamlead | Монитор в реальном времени |
 
 
 ## Симуляция входящего сообщения от фана
