@@ -164,6 +164,15 @@ REST_FRAMEWORK = {
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
+# CSRF
+CSRF_TRUSTED_ORIGINS = [
+    'https://crm-production-1609.up.railway.app',
+    'https://bubbly-illumination-production-ab06.up.railway.app',
+]
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
