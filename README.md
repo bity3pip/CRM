@@ -4,77 +4,75 @@
 
 ## Стек
 
-- Backend: Django + DRF + Channels (WebSocket)
-- Redis 7
-- PostgreSQL 15
-- Daphne (ASGI сервер)
+- **Backend**: Django + DRF + Channels (WebSocket)
+- **Frontend**: Vue 3 (Composition API) + Pinia
+- **Redis 7**
+- **PostgreSQL 15**
+- **Daphne** (ASGI сервер)
+- **Nginx** (реверс-прокси)
 
 ## Запуск
 
-### Docker (рекомендуется)
+### Docker 
 
-\```bash
+```bash
 docker-compose up --build
-\```
+```
 
-- Backend API: http://localhost:8000
-- Admin: http://localhost:8000/admin
-
-### Локально
-
-\```bash
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py seed
-daphne -p 8000 config.asgi:application
-\```
+- Фронт: http://localhost
+- Backend API: http://localhost/api/
+- Admin: http://localhost/admin
 
 ## Тестовые учётки
 
-| Логин      | Пароль   | Роль   |
-|------------|----------|--------|
-| teamlead   | test1234 | Тимлид |
-| chatter1   | test1234 | Чатер  |
-| chatter2   | test1234 | Чатер  |
-| chatter3   | test1234 | Чатер  |
-| model_anna | test1234 | Модель |
-| model_kate | test1234 | Модель |
+| Логин | Пароль | Роль     |
+|-------|--------|----------|
+| teamlead | test1234 | Teamlead |
+| chatter1 | test1234 | Chatter  |
+| chatter2 | test1234 | Chatter  |
+| chatter3 | test1234 | Chatter  |
+| model_anna | test1234 | Model    |
+| model_kate | test1234 | Model   |
 
-## API
+## REST API
 
-### REST
+| Метод | URL | Роль | Описание |
+|-------|-----|------|----------|
+| POST | /api/auth/login/ | все | Получить JWT токен |
+| GET | /api/auth/me/ | все | Текущий пользователь |
+| GET | /api/dialogs/ | chatter | Список диалогов |
+| GET | /api/dialogs/{id}/messages/ | chatter | История сообщений |
+| POST | /api/dialogs/{id}/messages/send/ | chatter | Отправить сообщение |
+| POST | /api/dialogs/{id}/fan-message/ | все | Симуляция сообщения от фана |
+| POST | /api/dialogs/{id}/read/ | chatter | Обнулить непрочитанные |
+| GET | /api/monitor/chatters/ | teamlead | Метрики чатеров |
 
-| Метод | URL                              | Описание                    |
-|-------|----------------------------------|-----------------------------|
-| POST  | /api/auth/login/                 | Получить JWT токен          |
-| GET   | /api/dialogs/                    | Список диалогов чатера      |
-| GET   | /api/dialogs/{id}/messages/      | История сообщений           |
-| POST  | /api/dialogs/{id}/messages/send/ | Отправить сообщение         |
-| POST  | /api/dialogs/{id}/fan-message/   | Симуляция сообщения от фана |
-| POST  | /api/dialogs/{id}/read/          | Обнулить непрочитанные      |
-| GET   | /api/monitor/chatters/           | Метрики чатеров (тимлид)    |
+## WebSocket
 
-### WebSocket
+| URL | Роль | Описание |
+|-----|------|----------|
+| ws://host/ws/dialogs/{id}/?token=JWT | chatter | Диалог в реальном времени |
+| ws://host/ws/monitor/?token=JWT | teamlead | Монитор в реальном времени |
 
-| URL                                  | Описание         |
-|--------------------------------------|------------------|
-| ws://host/ws/dialogs/{id}/?token=JWT | Чатер — диалог   |
-| ws://host/ws/monitor/?token=JWT      | Тимлид — монитор |
 
 ## Симуляция входящего сообщения от фана
 
-\```bash
-curl -X POST http://localhost:8000/api/dialogs/1/fan-message/ \
-  -H "Authorization: Bearer <token>" \
+```bash
+# Получить токен
+TOKEN=$(curl -s -X POST http://localhost/api/auth/login/ \
+  -H "Content-Type: application/json" \
+  -d '{"username": "chatter1", "password": "test1234"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['access'])")
+
+# Отправить сообщение от фана
+curl -X POST http://localhost/api/dialogs/1/fan-message/ \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"content": "Привет!", "message_type": "text"}'
-\```
+```
 
-## Порог просрочки
+## Настройка порогов
 
-Настраивается через env:
-
-\```env
-OVERDUE_THRESHOLD_MINUTES=5
-PRESENCE_GRACE_SECONDS=30
-\```
+```env
+OVERDUE_THRESHOLD_MINUTES=5   # кол-во минут чтобы диалог считался просроченым
+PRESENCE_GRACE_SECONDS=30     # grace period для presence
+```

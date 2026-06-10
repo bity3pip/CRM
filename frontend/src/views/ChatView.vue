@@ -57,7 +57,7 @@ async function onSelectDialog(dialog) {
 
 function connectToDialog(dialogId) {
   const token = auth.accessToken
-  const wsBase = import.meta.env.VITE_WS_URL || 'ws://localhost:8000'
+  const wsBase = import.meta.env.VITE_WS_URL || ''
   const url = `${wsBase}/ws/dialogs/${dialogId}/?token=${token}`
 
   const ws = useWebSocket(url, {
@@ -85,6 +85,20 @@ function handleWsMessage(data, dialogId) {
     }
 
     chat.upsertDialogFromMessage(message, dialogId)
+
+    if (data.type === 'message' && message.sender_type === 'chatter') {
+      const dialog = chat.dialogs.find(d => d.id === dialogId)
+      if (dialog) {
+        dialog.fan_waiting_since = null
+        dialog.is_overdue = false
+        dialog.waiting_minutes = null
+      }
+      if (chat.activeDialog?.id === dialogId) {
+        chat.activeDialog.fan_waiting_since = null
+        chat.activeDialog.is_overdue = false
+        chat.activeDialog.waiting_minutes = null
+      }
+    }
   }
 
   if (data.type === 'missed_messages') {
@@ -94,7 +108,6 @@ function handleWsMessage(data, dialogId) {
     })
   }
 }
-
 function handleLogout() {
   if (currentWs) currentWs.disconnect()
   auth.logout()

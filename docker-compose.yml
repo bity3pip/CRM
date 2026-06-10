@@ -3,8 +3,6 @@ version: '3.9'
 services:
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
     restart: unless-stopped
 
   db:
@@ -13,8 +11,6 @@ services:
       POSTGRES_DB: crm_chatter
       POSTGRES_USER: crm_user
       POSTGRES_PASSWORD: crm_password
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -28,10 +24,6 @@ services:
              python manage.py collectstatic --noinput && 
              python manage.py seed &&
              daphne -b 0.0.0.0 -p 8000 config.asgi:application"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
     environment:
       SECRET_KEY: dev-secret-key-change-in-production
       DEBUG: "True"
@@ -39,11 +31,20 @@ services:
       DATABASE_URL: postgresql://crm_user:crm_password@db:5432/crm_chatter
       OVERDUE_THRESHOLD_MINUTES: "5"
       PRESENCE_GRACE_SECONDS: "30"
-    ports:
-      - "8000:8000"
+      DJANGO_SETTINGS_MODULE: config.settings
     depends_on:
       - redis
       - db
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
     restart: unless-stopped
 
 volumes:

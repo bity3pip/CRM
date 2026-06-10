@@ -70,7 +70,7 @@ onUnmounted(() => {
 
 function connectWs() {
   const token = auth.accessToken
-  const wsBase = import.meta.env.VITE_WS_URL || 'ws://localhost:8000'
+  const wsBase = import.meta.env.VITE_WS_URL || ''
   const url = `${wsBase}/ws/monitor/?token=${token}`
 
   ws = useWebSocket(url, {
