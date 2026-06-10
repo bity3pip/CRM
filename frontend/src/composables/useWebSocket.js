@@ -33,10 +33,14 @@ export function useWebSocket(url, handlers) {
             }
         }
 
-        ws.value.onclose = () => {
+        ws.value.onclose = (event) => {
             connected.value = false
-            handlers.onClose?.()
+            handlers.onClose?.(event)
             if (!manualClose) {
+                if (event.code === 4401 || event.code === 4403) {
+                    handlers.onAuthError?.()
+                    return
+                }
                 reconnectTimer = setTimeout(() => connect(), 3000)
             }
         }

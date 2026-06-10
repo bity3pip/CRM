@@ -59,13 +59,19 @@ const sortedChatters = computed(() => {
   })
 })
 
+let tickInterval = null
+
 onMounted(() => {
   monitor.fetchChatters()
   connectWs()
+  tickInterval = setInterval(() => {
+    ws?.send({type: 'get_snapshot'})
+  }, 3000)
 })
 
 onUnmounted(() => {
   ws?.disconnect()
+  clearInterval(tickInterval)
 })
 
 function connectWs() {
@@ -85,6 +91,9 @@ function connectWs() {
     onClose: () => {
       wsConnected.value = false
     },
+    onAuthError: () => {
+      auth.logout()
+    }
   })
 
   ws.connect()

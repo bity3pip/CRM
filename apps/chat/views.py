@@ -1,5 +1,6 @@
 from django.utils import timezone
 from django.db import transaction
+from django.db.models import F
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from rest_framework import generics, status
@@ -98,11 +99,11 @@ class FanMessageView(generics.CreateAPIView):
             )
             if not dialog.fan_waiting_since:
                 dialog.fan_waiting_since = timezone.now()
-            dialog.unread_count += 1
             dialog.save(update_fields=['fan_waiting_since',
                                        'unread_count',
                                        'updated_at']
                         )
+            Dialog.objects.filter(id=dialog.id).update(unread_count=F('unread_count') + 1)
 
         channel_layer = get_channel_layer()
         message_data = MessageSerializer(message).data

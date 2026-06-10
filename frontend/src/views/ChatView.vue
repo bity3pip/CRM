@@ -70,6 +70,9 @@ function connectToDialog(dialogId) {
       const lastId = chat.getLastMessageId()
       if (lastId) ws.setLastMessageId(lastId)
     },
+    onAuthError: () => {
+      auth.logout()
+    }
   })
 
   ws.connect()
